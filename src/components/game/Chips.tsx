@@ -35,7 +35,7 @@ export function ChipDisc({
       className={cn(
         "relative size-12 rounded-full font-table text-sm font-bold tracking-wide shadow-[inset_0_0_0_3px_rgba(255,255,255,0.28),inset_0_0_0_6px_rgba(0,0,0,0.25),0_2px_6px_rgba(0,0,0,0.4)] transition-transform duration-150 ease-out active:scale-[0.96]",
         chipTone(amount),
-        selected && "ring-2 ring-ink ring-offset-2 ring-offset-white scale-105",
+        selected && "ring-2 ring-flame ring-offset-2 ring-offset-night scale-105",
       )}
     >
       {amount}

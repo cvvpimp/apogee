@@ -1,13 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Figtree", "Segoe UI", system-ui, sans-serif;
-  --font-display: "Fraunces", "Times New Roman", serif;
-  --font-table: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Oswald", "Arial Narrow", sans-serif;
+  --font-table: "Oswald", "Arial Narrow", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
-  --color-ink: #0e0c0a;
-  --color-cream: #e8dcc4;
-  --color-muted: #b7a78c;
+  --color-ink: #07080d;
+  --color-night: #07080d;
+  --color-cream: #f4efe6;
+  --color-muted: #8b93a7;
+  --color-steel: #8b93a7;
+  --color-flame: #ff6a2a;
   --color-felt: #0c3d2e;
   --color-felt-deep: #082820;
   --color-felt-well: #0a3328;
@@ -53,8 +57,8 @@
 
   body {
     margin: 0;
-    background: #ffffff;
-    color: var(--color-ink);
+    background: var(--color-night);
+    color: var(--color-cream);
     font-family: var(--font-sans);
   }
 

@@ -2,6 +2,7 @@ let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let sfx: GainNode | null = null;
 let unlocked = false;
+let rumble: { src: AudioBufferSourceNode; gain: GainNode } | null = null;
 
 function ensure(): AudioContext | null {
   if (typeof window === "undefined") return null;
@@ -145,10 +146,79 @@ export function playLose(): void {
   osc.stop(audio.currentTime + 0.34);
 }
 
+export function playRumble(): void {
+  stopRumble();
+  const nodes = bus();
+  if (!nodes) return;
+  const { audio, sfx } = nodes;
+  const src = audio.createBufferSource();
+  src.buffer = noiseBuffer(audio, 2);
+  src.loop = true;
+  const filter = audio.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.value = 280;
+  const gain = audio.createGain();
+  gain.gain.setValueAtTime(0.0001, audio.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.22, audio.currentTime + 0.15);
+  src.connect(filter);
+  filter.connect(gain);
+  gain.connect(sfx);
+  src.start();
+  rumble = { src, gain };
+}
+
+export function stopRumble(): void {
+  if (!rumble) return;
+  const nodes = bus();
+  const t = nodes?.audio.currentTime ?? 0;
+  rumble.gain.gain.cancelScheduledValues(t);
+  rumble.gain.gain.setValueAtTime(Math.max(0.0001, rumble.gain.gain.value), t);
+  rumble.gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+  try {
+    rumble.src.stop(t + 0.14);
+  } catch {
+    /* already stopped */
+  }
+  rumble = null;
+}
+
+export function playBoom(): void {
+  const nodes = bus();
+  if (!nodes) return;
+  const { audio, sfx } = nodes;
+  const src = audio.createBufferSource();
+  src.buffer = noiseBuffer(audio, 0.55);
+  const filter = audio.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.setValueAtTime(900, audio.currentTime);
+  filter.frequency.exponentialRampToValueAtTime(80, audio.currentTime + 0.45);
+  const gain = audio.createGain();
+  gain.gain.setValueAtTime(0.0001, audio.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.7, audio.currentTime + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + 0.55);
+  src.connect(filter);
+  filter.connect(gain);
+  gain.connect(sfx);
+  src.start();
+
+  const osc = audio.createOscillator();
+  const og = audio.createGain();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(90, audio.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(32, audio.currentTime + 0.4);
+  og.gain.setValueAtTime(0.0001, audio.currentTime);
+  og.gain.exponentialRampToValueAtTime(0.35, audio.currentTime + 0.01);
+  og.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + 0.45);
+  osc.connect(og);
+  og.connect(sfx);
+  osc.start();
+  osc.stop(audio.currentTime + 0.46);
+}
+
 if (typeof window !== "undefined") {
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && ctx?.state === "suspended") {
-      void ctx.resume();
-    }
+    if (!ctx) return;
+    if (document.hidden) void ctx.suspend();
+    else if (unlocked) void ctx.resume();
   });
 }
